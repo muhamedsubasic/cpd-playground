@@ -1,1 +1,1 @@
-export { default } from '../lab3/Timer';
+export { default } from '../lab3/Weather.js';
