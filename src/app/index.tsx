@@ -1,1 +1,1 @@
-export { default } from '../lab2/Counter';
+export { default } from '../lab3/Timer';
