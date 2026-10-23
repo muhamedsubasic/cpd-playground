@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 import { styles } from "../lab2/styles";
+import Forecast from "./Forecast";
 import { useFetch } from "./useFetch";
 
 const CITIES = [
@@ -46,7 +47,16 @@ export default function Weather() {
           const selected = item.name === city.name;
 
           return (
-            <Pressable key={item.name} style={[styles.button, !selected && { backgroundColor: "#E6EEF7" }]} onPress={() => selectCity(item)}>
+            <Pressable
+              key={item.name}
+              style={[
+                styles.button,
+                !selected && {
+                  backgroundColor: "#E6EEF7",
+                },
+              ]}
+              onPress={() => selectCity(item)}
+            >
               <Text style={[styles.buttonText, !selected && { color: "#003A6D" }]}>{item.name}</Text>
             </Pressable>
           );
@@ -70,6 +80,8 @@ export default function Weather() {
           <Text style={styles.muted}>No weather data available.</Text>
         )}
       </View>
+
+      <Forecast city={city} />
     </View>
   );
 }
