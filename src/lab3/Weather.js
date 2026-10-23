@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 import { styles } from "../lab2/styles";
+import { useFetch } from "./useFetch";
 
 const CITIES = [
   { name: "Sarajevo", latitude: 43.86, longitude: 18.41 },
@@ -17,55 +18,14 @@ function currentUrl(city) {
 
 export default function Weather() {
   const [city, setCity] = useState(CITIES[0]);
-  const [weather, setWeather] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    let ignore = false;
-
-    async function load() {
-      try {
-        const res = await fetch(currentUrl(city));
-
-        if (!res.ok) {
-          throw new Error(`Request failed: HTTP ${res.status}`);
-        }
-
-        const json = await res.json();
-
-        if (!ignore) {
-          setWeather({
-            temperature: json.current.temperature_2m,
-            wind: json.current.wind_speed_10m,
-          });
-        }
-      } catch (err) {
-        if (!ignore) {
-          setError(err.message || "Failed to load weather.");
-        }
-      } finally {
-        if (!ignore) {
-          setLoading(false);
-        }
-      }
-    }
-
-    load();
-
-    return () => {
-      ignore = true;
-    };
-  }, [city]);
+  const { data, loading, error } = useFetch(currentUrl(city));
 
   function selectCity(selectedCity) {
     if (selectedCity.name === city.name) {
       return;
     }
 
-    setLoading(true);
-    setError(null);
-    setWeather(null);
     setCity(selectedCity);
   }
 
@@ -100,12 +60,15 @@ export default function Weather() {
           <ActivityIndicator size="large" />
         ) : error ? (
           <Text style={{ color: "red" }}>Error: {error}</Text>
-        ) : weather ? (
+        ) : data?.current ? (
           <>
-            <Text style={styles.title}>{weather.temperature} °C</Text>
-            <Text style={styles.muted}>Wind {weather.wind} km/h</Text>
+            <Text style={styles.title}>{data.current.temperature_2m} °C</Text>
+
+            <Text style={styles.muted}>Wind {data.current.wind_speed_10m} km/h</Text>
           </>
-        ) : null}
+        ) : (
+          <Text style={styles.muted}>No weather data available.</Text>
+        )}
       </View>
     </View>
   );
