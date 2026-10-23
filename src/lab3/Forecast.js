@@ -1,5 +1,6 @@
 import { ActivityIndicator, Text, View } from "react-native";
 import { styles } from "../lab2/styles";
+import Temperature from "./Temperature";
 import { useFetch } from "./useFetch";
 
 function forecastUrl(city) {
@@ -19,9 +20,23 @@ export default function Forecast({ city }) {
         <Text style={{ color: "red" }}>Error: {error}</Text>
       ) : data?.daily ? (
         data.daily.time.map((date, i) => (
-          <Text key={date} style={styles.muted}>
-            {date} {data.daily.temperature_2m_min[i]} °C / {data.daily.temperature_2m_max[i]} °C
-          </Text>
+          <View
+            key={date}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: 4,
+            }}
+          >
+            <Text style={styles.muted}>{date}</Text>
+
+            <Temperature celsius={data.daily.temperature_2m_min[i]} />
+
+            <Text style={styles.muted}>/</Text>
+
+            <Temperature celsius={data.daily.temperature_2m_max[i]} />
+          </View>
         ))
       ) : (
         <Text style={styles.muted}>No forecast data available.</Text>

@@ -2,6 +2,8 @@ import { useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 import { styles } from "../lab2/styles";
 import Forecast from "./Forecast";
+import Temperature from "./Temperature";
+import { UnitsContext } from "./UnitsContext";
 import { useFetch } from "./useFetch";
 
 const CITIES = [
@@ -19,6 +21,7 @@ function currentUrl(city) {
 
 export default function Weather() {
   const [city, setCity] = useState(CITIES[0]);
+  const [unit, setUnit] = useState("C");
 
   const { data, loading, error } = useFetch(currentUrl(city));
 
@@ -31,57 +34,80 @@ export default function Weather() {
   }
 
   return (
-    <View style={styles.screen}>
-      <ScrollView
-        horizontal
-        style={{ flexGrow: 0, flexShrink: 0 }}
-        contentContainerStyle={{
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 8,
-          paddingRight: 8,
-        }}
-        showsHorizontalScrollIndicator={false}
-      >
-        {CITIES.map((item) => {
-          const selected = item.name === city.name;
+    <UnitsContext value={unit}>
+      <View style={styles.screen}>
+        <View style={styles.row}>
+          {["C", "F"].map((item) => {
+            const selected = unit === item;
 
-          return (
-            <Pressable
-              key={item.name}
-              style={[
-                styles.button,
-                !selected && {
-                  backgroundColor: "#E6EEF7",
-                },
-              ]}
-              onPress={() => selectCity(item)}
-            >
-              <Text style={[styles.buttonText, !selected && { color: "#003A6D" }]}>{item.name}</Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+            return (
+              <Pressable
+                key={item}
+                style={[
+                  styles.button,
+                  !selected && {
+                    backgroundColor: "#E6EEF7",
+                  },
+                ]}
+                onPress={() => setUnit(item)}
+              >
+                <Text style={[styles.buttonText, !selected && { color: "#003A6D" }]}>°{item}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
 
-      <View style={styles.card}>
-        <Text style={styles.title}>{city.name}</Text>
+        <ScrollView
+          horizontal
+          style={{ flexGrow: 0, flexShrink: 0 }}
+          contentContainerStyle={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+            paddingRight: 8,
+          }}
+          showsHorizontalScrollIndicator={false}
+        >
+          {CITIES.map((item) => {
+            const selected = item.name === city.name;
 
-        {loading ? (
-          <ActivityIndicator size="large" />
-        ) : error ? (
-          <Text style={{ color: "red" }}>Error: {error}</Text>
-        ) : data?.current ? (
-          <>
-            <Text style={styles.title}>{data.current.temperature_2m} °C</Text>
+            return (
+              <Pressable
+                key={item.name}
+                style={[
+                  styles.button,
+                  !selected && {
+                    backgroundColor: "#E6EEF7",
+                  },
+                ]}
+                onPress={() => selectCity(item)}
+              >
+                <Text style={[styles.buttonText, !selected && { color: "#003A6D" }]}>{item.name}</Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
 
-            <Text style={styles.muted}>Wind {data.current.wind_speed_10m} km/h</Text>
-          </>
-        ) : (
-          <Text style={styles.muted}>No weather data available.</Text>
-        )}
+        <View style={styles.card}>
+          <Text style={styles.title}>{city.name}</Text>
+
+          {loading ? (
+            <ActivityIndicator size="large" />
+          ) : error ? (
+            <Text style={{ color: "red" }}>Error: {error}</Text>
+          ) : data?.current ? (
+            <>
+              <Temperature celsius={data.current.temperature_2m} style={styles.title} />
+
+              <Text style={styles.muted}>Wind {data.current.wind_speed_10m} km/h</Text>
+            </>
+          ) : (
+            <Text style={styles.muted}>No weather data available.</Text>
+          )}
+        </View>
+
+        <Forecast city={city} />
       </View>
-
-      <Forecast city={city} />
-    </View>
+    </UnitsContext>
   );
 }
